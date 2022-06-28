@@ -15,7 +15,11 @@ python tools/test.py\
 python tools/train.py \
     configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
     --auto-scale-lr \
-    --cfg-options auto_scale_lr.base_batch_size=12 data.workers_per_gpu=8 data.samples_per_gpu=12 log_config.interval=30000 \
+    --cfg-options auto_scale_lr.base_batch_size=12 \
+                    data.workers_per_gpu=8 \
+                    data.samples_per_gpu=12 \
+                    log_config.interval=30000 \
+                    runner.max_epoch=3 \
     --work-dir=/mnt/cps/coco/
 
 
