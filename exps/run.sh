@@ -11,6 +11,8 @@ python tools/test.py\
  --show \
  --work-dir=results \
  --eval="bbox" \
+# train on smaller files for better debug
+python -m make_smaller_coco
 
 python tools/train.py \
     configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
@@ -20,6 +22,7 @@ python tools/train.py \
                     data.samples_per_gpu=12 \
                     log_config.interval=30000 \
                     runner.max_epoch=3 \
+                    data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json'
     --work-dir=/mnt/cps/coco/
 
 
