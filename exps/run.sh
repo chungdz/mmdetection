@@ -12,7 +12,7 @@ python tools/test.py\
  --work-dir=results \
  --eval="bbox" \
 # train on smaller files for better debug
-python -m make_smaller_coco
+python -m exps.make_smaller_coco
 
 python tools/train.py \
     configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \

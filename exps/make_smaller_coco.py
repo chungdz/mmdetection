@@ -1,6 +1,7 @@
 from email.mime import image
 import json
 import os
+from tqdm import tqdm
 
 image_counts = 20000
 dpath = '/mnt/coco'
@@ -11,16 +12,16 @@ out_file = os.path.join(dpath, 'annotations', 'instances_train2017.small.json')
 train_instance = json.load(open(input_file, "r"))
 outd = {}
 outd['info'] = train_instance['info']
-outd['license'] = train_instance['license']
+outd['licenses'] = train_instance['licenses']
 outd['categories'] = train_instance['categories']
 
 outd['images'] = train_instance['images'][:image_counts]
 iidset = set()
-for iinfo in outd['images']:
+for iinfo in tqdm(outd['images']):
     iidset.add(iinfo['id'])
 
 outd['annotations'] = []
-for ainfo in train_instance['annotations']:
+for ainfo in tqdm(train_instance['annotations']):
     if ainfo['id'] in iidset:
         outd['annotations'].append(ainfo)
 
