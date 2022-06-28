@@ -1,5 +1,5 @@
 # setup env
-export MMDET_DATASETS=/mnt/
+export MMDET_DATASETS=/mnt/coco/
 export OMP_NUM_THREADS=8
 
 # Test on existing model and checkpoint
@@ -20,10 +20,20 @@ python tools/train.py \
     --cfg-options auto_scale_lr.base_batch_size=12 \
                     data.workers_per_gpu=8 \
                     data.samples_per_gpu=12 \
-                    log_config.interval=30000 \
-                    runner.max_epoch=3 \
-                    data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json'
-    --work-dir=/mnt/cps/coco/
+                    log_config.interval=100 \
+                    runner.max_epochs=3 \
+                    data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
+    --work-dir=cps
+# run all
+python tools/train.py \
+    configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
+    --auto-scale-lr \
+    --cfg-options auto_scale_lr.base_batch_size=12 \
+                    data.workers_per_gpu=8 \
+                    data.samples_per_gpu=12 \
+                    log_config.interval=300 \
+                    runner.max_epochs=2 \
+    --work-dir=cps
 
 
     
