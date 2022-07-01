@@ -10,4 +10,5 @@ model = dict(
         drop_rate=0.,
         attn_drop_rate=0.,
         drop_path_rate=0.3,
-        init_cfg=dict(type='Pretrained', checkpoint=pretrained)))
+        init_cfg=dict(type='Pretrained', checkpoint=pretrained)),
+    neck=dict(in_channels=[384, 768, 1536, 1536]))
