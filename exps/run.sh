@@ -19,7 +19,7 @@ python tools/train.py \
     --cfg-options auto_scale_lr.base_batch_size=12 \
                     data.workers_per_gpu=8 \
                     data.samples_per_gpu=12 \
-                    log_config.interval=100 \
+                    log_config.interval=50 \
                     runner.max_epochs=3 \
                     data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
     --work-dir=cps
