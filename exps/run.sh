@@ -19,7 +19,7 @@ python tools/train.py \
     --cfg-options auto_scale_lr.base_batch_size=12 \
                     data.workers_per_gpu=8 \
                     data.samples_per_gpu=12 \
-                    log_config.interval=50 \
+                    log_config.interval=100 \
                     runner.max_epochs=3 \
                     data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
     --work-dir=cps
@@ -54,7 +54,7 @@ python tools/train.py \
     --cfg-options auto_scale_lr.base_batch_size=4 \
                     data.workers_per_gpu=8 \
                     data.samples_per_gpu=4 \
-                    log_config.interval= \
+                    log_config.interval=100 \
                     runner.max_epochs=2 \
                     data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
                     model.backbone.init_cfg.checkpoint='checkpoints/swin_small_patch4_window7_224.pth'\
@@ -65,14 +65,14 @@ python tools/train.py \
 python tools/train.py \
     configs/swin/mask_rcnn_swin-b-p4-w7_fpn_fp16_ms-crop-3x_coco.py \
     --auto-scale-lr \
-    --cfg-options auto_scale_lr.base_batch_size=4 \
+    --cfg-options auto_scale_lr.base_batch_size=12 \
                     data.workers_per_gpu=8 \
-                    data.samples_per_gpu=4 \
-                    log_config.interval=50 \
+                    data.samples_per_gpu=12 \
+                    log_config.interval=100 \
                     runner.max_epochs=2 \
                     data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
                     model.backbone.init_cfg.checkpoint='checkpoints/swin_base_patch4_window7_224_22k.pth'\
-                    evaluation.interval=1 \
+                    evaluation.interval=1 
     --work-dir=cps
 
     
