@@ -1,5 +1,5 @@
 # setup env
-export MMDET_DATASETS=/root/autodl-tmp/coco
+export MMDET_DATASETS=/root/autodl-tmp/coco/
 export OMP_NUM_THREADS=8
 python -m exps.make_smaller_coco --image_counts=50000 --dpath=/root/autodl-tmp/coco
 
@@ -8,9 +8,9 @@ python -m exps.make_smaller_coco --image_counts=50000 --dpath=/root/autodl-tmp/c
 # weightes are downloaded from https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn and save into checkpoints
 python tools/test.py\
  configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
- checkpoints/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
+ /root/autodl-tmp/checkpoints/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
  --show \
- --work-dir=results \
+ --work-dir=/root/autodl-tmp/results \
  --eval="bbox" \
 # train on smaller files for better debug
 python tools/train.py \
@@ -21,8 +21,8 @@ python tools/train.py \
                     data.samples_per_gpu=12 \
                     log_config.interval=100 \
                     runner.max_epochs=3 \
-                    data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
-    --work-dir=cps
+                    data.train.ann_file='/root/autodl-tmp/coco/annotations/instances_train2017.small.json' \
+    --work-dir=/root/autodl-tmp/cps
 # run all
 python tools/train.py \
     configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
@@ -32,7 +32,7 @@ python tools/train.py \
                     data.samples_per_gpu=12 \
                     log_config.interval=300 \
                     runner.max_epochs=2 \
-    --work-dir=cps
+    --work-dir=/root/autodl-tmp/cps
 
 # run swin
 # Test on existing model and checkpoint
@@ -40,14 +40,14 @@ python tools/train.py \
 # weightes are downloaded from https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn and save into checkpoints
 python tools/test.py\
  configs/swin/mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco.py \
- checkpoints/mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco_20210903_104808-b92c91f1.pth \
+ /root/autodl-tmp/checkpoints/mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco_20210903_104808-b92c91f1.pth \
  --show \
  --work-dir=results \
  --eval bbox segm
 
 ./tools/dist_test.sh\
  configs/swin/mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco.py \
- checkpoints/mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco_20210903_104808-b92c91f1.pth \
+ /root/autodl-tmp/checkpoints/mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco_20210903_104808-b92c91f1.pth \
  6 \
  --work-dir=results \
  --eval bbox segm
@@ -63,10 +63,10 @@ python tools/train.py \
                     data.samples_per_gpu=4 \
                     log_config.interval=100 \
                     runner.max_epochs=2 \
-                    data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
-                    model.backbone.init_cfg.checkpoint='checkpoints/swin_small_patch4_window7_224.pth'\
+                    data.train.ann_file='/root/autodl-tmp/coco/annotations/instances_train2017.small.json' \
+                    model.backbone.init_cfg.checkpoint='/root/autodl-tmp/checkpoints/swin_small_patch4_window7_224.pth'\
                     evaluation.interval=1 \
-    --work-dir=cps
+    --work-dir=/root/autodl-tmp/cps
 
 ./tools/dist_train.sh \
     configs/swin/mask_rcnn_swin-b-p4-w7_fpn_fp16_ms-crop-3x_coco.py \
@@ -77,10 +77,10 @@ python tools/train.py \
                     data.samples_per_gpu=3 \
                     log_config.interval=50 \
                     runner.max_epochs=2 \
-                    data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
-                    model.backbone.init_cfg.checkpoint='checkpoints/swin_base_patch4_window7_224_22k.pth'\
+                    data.train.ann_file='/root/autodl-tmp/coco/annotations/instances_train2017.small.json' \
+                    model.backbone.init_cfg.checkpoint='/root/autodl-tmp/checkpoints/swin_base_patch4_window7_224_22k.pth'\
                     evaluation.interval=1 \
-    --work-dir=cps
+    --work-dir=/root/autodl-tmp/cps
 
 
 # train on smaller files and swin base for better debug
@@ -92,12 +92,13 @@ python tools/train.py \
                     data.samples_per_gpu=4 \
                     log_config.interval=100 \
                     runner.max_epochs=2 \
-                    data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
-                    model.backbone.init_cfg.checkpoint='checkpoints/swin_base_patch4_window7_224_22k.pth'\
+                    data.train.ann_file='/root/autodl-tmp/coco/annotations/instances_train2017.small.json' \
+                    model.backbone.init_cfg.checkpoint='/root/autodl-tmp/checkpoints/swin_base_patch4_window7_224_22k.pth'\
                     evaluation.interval=1 \
-    --work-dir=cps
+    --work-dir=/root/autodl-tmp/cps
 
 # train on whole file
+# --cfg-options resume_from
 ./tools/dist_train.sh \
     configs/swin/mask_rcnn_swin-b-p4-w7_fpn_fp16_ms-crop-3x_coco.py \
     6 \
@@ -105,11 +106,12 @@ python tools/train.py \
     --cfg-options auto_scale_lr.base_batch_size=18 \
                     data.workers_per_gpu=8 \
                     data.samples_per_gpu=3 \
-                    log_config.interval=100 \
-                    runner.max_epochs=2 \
-                    model.backbone.init_cfg.checkpoint='checkpoints/swin_base_patch4_window7_224_22k.pth'\
+                    log_config.interval=1000 \
+                    runner.max_epochs=20 \
+                    model.backbone.init_cfg.checkpoint='/root/autodl-tmp/checkpoints/swin_base_patch4_window7_224_22k.pth'\
                     evaluation.interval=1 \
-    --work-dir=cps
+                    evaluation.save_best='mAP' \
+    --work-dir=/root/autodl-tmp/cps
     
 
 
