@@ -2,8 +2,16 @@ from email.mime import image
 import json
 import os
 from tqdm import tqdm
+import argparse
 
-image_counts = 20000
+parser = argparse.ArgumentParser(description='Make small dataset')
+parser.add_argument(
+        '--image_counts',
+        type=int,
+        default=20000)
+
+args = parser.parse_args()
+image_counts = args.image_counts
 dpath = '/mnt/coco'
 
 input_file = os.path.join(dpath, 'annotations', 'instances_train2017.json')
