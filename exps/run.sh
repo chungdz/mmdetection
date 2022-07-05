@@ -106,11 +106,7 @@ python tools/train.py \
                     data.workers_per_gpu=8 \
                     data.samples_per_gpu=3 \
                     log_config.interval=100 \
-                    runner.max_epochs=2 \
+                    runner.max_epochs=20 \
                     model.backbone.init_cfg.checkpoint='checkpoints/swin_base_patch4_window7_224_22k.pth'\
                     evaluation.interval=1 \
     --work-dir=cps
-    
-
-
-

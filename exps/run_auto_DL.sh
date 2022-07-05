@@ -110,8 +110,59 @@ python tools/train.py \
                     runner.max_epochs=20 \
                     model.backbone.init_cfg.checkpoint='/root/autodl-tmp/checkpoints/swin_base_patch4_window7_224_22k.pth'\
                     evaluation.interval=1 \
-                    evaluation.save_best='mAP' \
     --work-dir=/root/autodl-tmp/cps
+
+./tools/dist_train.sh \
+    configs/swin/mask_rcnn_swin-b-p4-w7_fpn_fp16_ms-crop-3x_coco.py \
+    6 \
+    --auto-scale-lr \
+    --cfg-options auto_scale_lr.base_batch_size=18 \
+                    data.workers_per_gpu=8 \
+                    data.samples_per_gpu=3 \
+                    log_config.interval=1000 \
+                    runner.max_epochs=10 \
+                    model.backbone.init_cfg.checkpoint='/root/autodl-tmp/checkpoints/swin_base_patch4_window7_224_22k.pth'\
+                    load_from='/root/autodl-tmp/cps/swin_based_rcnn.0703.pth' \
+                    evaluation.interval=1 \
+                    lr_config.step="[7,10]" \
+                    lr_config.warmup_iters=1 \
+    --work-dir=/root/autodl-tmp/cps
+
+## A40 4 on small dataset
+./tools/dist_train.sh \
+    configs/swin/mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco.py \
+    4 \
+    --auto-scale-lr \
+    --cfg-options auto_scale_lr.base_batch_size=36 \
+                    data.workers_per_gpu=8 \
+                    data.samples_per_gpu=9 \
+                    log_config.interval=50 \
+                    runner.max_epochs=2 \
+                    data.train.ann_file='/root/autodl-tmp/coco/annotations/instances_train2017.small.json' \
+                    model.backbone.init_cfg.checkpoint='/root/autodl-tmp/checkpoints/swin_small_patch4_window7_224.pth'\
+                    evaluation.interval=1 \
+                    optimizer.lr=0.00014 \
+    --work-dir=/root/autodl-tmp/cps
+
+
+## A40 4 GPU Swin small test
+./tools/dist_train.sh \
+    configs/swin/mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco.py \
+    4 \
+    --auto-scale-lr \
+    --cfg-options auto_scale_lr.base_batch_size=36 \
+                    data.workers_per_gpu=8 \
+                    data.samples_per_gpu=9 \
+                    log_config.interval=500 \
+                    runner.max_epochs=15 \
+                    model.backbone.init_cfg.checkpoint='/root/autodl-tmp/checkpoints/swin_small_patch4_window7_224.pth'\
+                    evaluation.interval=1 \
+                    optimizer.lr=0.00014 \
+                    lr_config.step="[11,15]" \
+                    lr_config.warmup_iters=250 \
+    --work-dir=/root/autodl-tmp/cps
+
+
     
 
 
