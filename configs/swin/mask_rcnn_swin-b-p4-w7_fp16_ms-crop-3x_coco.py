@@ -12,9 +12,12 @@ model = dict(
         drop_path_rate=0.3,
         init_cfg=dict(type='Pretrained', checkpoint=pretrained)),
     neck=dict(
-        type='FakeNeck'
+        type='FakeNeck',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=2048,
+        num_outs=1,
     ),
     rpn_head=dict(
-        in_channels=1024
+        in_channels=2048
     )
 )

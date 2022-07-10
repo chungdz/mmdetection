@@ -13,7 +13,11 @@ class FakeNeck(BaseModule):
     input is tuple of features
     """
 
-    def __init__(self):
+    def __init__(self, 
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=2048,
+        num_outs=1):
+        
         super(FakeNeck, self).__init__()
 
     @auto_fp16()
