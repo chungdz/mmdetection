@@ -13,14 +13,14 @@ model = dict(
         init_cfg=dict(type='Pretrained', checkpoint=pretrained)),
     neck=dict(
         type='FakeNeck',
-        in_channels=[256, 512, 1024, 2048],
-        out_channels=2048,
+        in_channels=[128, 256, 512, 1024],
+        out_channels=1024,
         num_outs=1,
     ),
     rpn_head=dict(
-        in_channels=2048
+        in_channels=1024
     ),
     roi_head=dict(
-        bbox_head=dict(in_channels=2048)
+        bbox_head=dict(in_channels=1024)
     )
 )
