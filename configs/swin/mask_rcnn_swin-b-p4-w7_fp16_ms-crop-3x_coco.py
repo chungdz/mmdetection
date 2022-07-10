@@ -11,4 +11,10 @@ model = dict(
         attn_drop_rate=0.,
         drop_path_rate=0.3,
         init_cfg=dict(type='Pretrained', checkpoint=pretrained)),
-    neck=None)
+    neck=dict(
+        type='FakeNeck'
+    ),
+    rpn_head=dict(
+        in_channels=1024
+    )
+)
