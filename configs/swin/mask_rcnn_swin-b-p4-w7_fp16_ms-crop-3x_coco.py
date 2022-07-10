@@ -19,5 +19,8 @@ model = dict(
     ),
     rpn_head=dict(
         in_channels=2048
+    ),
+    roi_head=dict(
+        bbox_head=dict(in_channels=2048)
     )
 )
