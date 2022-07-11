@@ -1,7 +1,7 @@
 # setup env
 export MMDET_DATASETS=/mnt/coco/
 export OMP_NUM_THREADS=8
-python -m exps.make_smaller_coco
+python -m exps.make_smaller_coco --image_counts=5000
 
 # Test on existing model and checkpoint
 # refer for the website https://github.com/open-mmlab/mmdetection/blob/master/docs/en/1_exist_data_model.md
