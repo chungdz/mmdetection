@@ -61,10 +61,16 @@ class RPNHead(AnchorHead):
 
     def forward_single(self, x):
         """Forward feature map of a single scale level."""
+        print('forward single of rpn head', 'num_base_priors is', self.num_base_priors)
+        print('input size:', x.size())
+        print('rpn_conv layer num', self.num_convs)
         x = self.rpn_conv(x)
+        print('after conv layer', x.size())
         x = F.relu(x, inplace=True)
         rpn_cls_score = self.rpn_cls(x)
+        print('cls score size:', rpn_cls_score.size())
         rpn_bbox_pred = self.rpn_reg(x)
+        print('bbox_pred size:', rpn_bbox_pred.size())
         return rpn_cls_score, rpn_bbox_pred
 
     def loss(self,
@@ -90,6 +96,7 @@ class RPNHead(AnchorHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
+        print('go into loss of rpn')
         losses = super(RPNHead, self).loss(
             cls_scores,
             bbox_preds,

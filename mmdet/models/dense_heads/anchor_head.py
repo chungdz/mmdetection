@@ -145,8 +145,12 @@ class AnchorHead(BaseDenseHead, BBoxTestMixin):
                 bbox_pred (Tensor): Box energies / deltas for a single scale \
                     level, the channels number is num_base_priors * 4.
         """
+        print('forward single of anchor head', 'num_base_priors is', self.num_base_priors)
+        print('input size:', x.size())
         cls_score = self.conv_cls(x)
+        print('cls score size:', cls_score.size())
         bbox_pred = self.conv_reg(x)
+        print('bbox_pred size:', bbox_pred.size())
         return cls_score, bbox_pred
 
     def forward(self, feats):
@@ -166,6 +170,7 @@ class AnchorHead(BaseDenseHead, BBoxTestMixin):
                     scale levels, each is a 4D-tensor, the channels number \
                     is num_base_priors * 4.
         """
+        print('go into forward function of anchor head, apply forward_single function on tuple inputs')
         return multi_apply(self.forward_single, feats)
 
     def get_anchors(self, featmap_sizes, img_metas, device='cuda'):
@@ -475,7 +480,10 @@ class AnchorHead(BaseDenseHead, BBoxTestMixin):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
+        print('go into loss of anchor head')
+        print('number of prediction set:', len(cls_scores), len(bbox_preds))
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
+        print('feature map sizes', featmap_sizes)
         assert len(featmap_sizes) == self.prior_generator.num_levels
 
         device = cls_scores[0].device

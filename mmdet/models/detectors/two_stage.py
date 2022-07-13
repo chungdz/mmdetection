@@ -65,8 +65,10 @@ class TwoStageDetector(BaseDetector):
     def extract_feat(self, img):
         """Directly extract features from the backbone+neck."""
         x = self.backbone(img)
+        print("Backbone output", [fm.size() for fm in x])
         if self.with_neck:
             x = self.neck(x)
+        print("Neck output", [fm.size() for fm in x])
         return x
 
     def forward_dummy(self, img):
@@ -124,6 +126,10 @@ class TwoStageDetector(BaseDetector):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
+        print("Two stage detector input:", img.size())
+        print("img metas", img_metas)
+        print("gt_bboxes", gt_bboxes)
+        print("gt_labels", gt_labels)
         x = self.extract_feat(img)
 
         losses = dict()
@@ -132,6 +138,7 @@ class TwoStageDetector(BaseDetector):
         if self.with_rpn:
             proposal_cfg = self.train_cfg.get('rpn_proposal',
                                               self.test_cfg.rpn)
+            print('rpn proposal cfg', proposal_cfg)
             rpn_losses, proposal_list = self.rpn_head.forward_train(
                 x,
                 img_metas,
