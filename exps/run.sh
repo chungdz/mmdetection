@@ -106,8 +106,9 @@ python tools/train.py \
                     log_config.interval=100 \
                     runner.max_epochs=2 \
                     data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
-                    model.backbone.init_cfg.checkpoint='checkpoints/swin_base_patch4_window7_224_22k.pth'\
+                    model.backbone.init_cfg.checkpoint='/mnt/checkpoints/swin_base_patch4_window7_224_22k.pth'\
                     evaluation.interval=1 \
                     lr_config.step="[2,2]" \
                     lr_config.warmup_iters=10 \
-    --work-dir=cps
+    --work-dir=/mnt/cps_detect
+
