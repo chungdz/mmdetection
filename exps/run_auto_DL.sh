@@ -224,6 +224,7 @@ python tools/train.py \
                     log_config.interval=1000 \
                     runner.max_epochs=22 \
                     model.backbone.init_cfg.checkpoint='/root/autodl-tmp/checkpoints/swin_base_patch4_window7_224_22k.pth'\
+                    # load_from='/root/autodl-tmp/cps/epoch_22.pth' \
                     evaluation.interval=1 \
                     lr_config.step="[19,22]" \
                     lr_config.warmup_iters=800 \
