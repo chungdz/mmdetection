@@ -63,14 +63,14 @@ class RPNHead(AnchorHead):
         """Forward feature map of a single scale level."""
         print('forward single of rpn head', 'num_base_priors is', self.num_base_priors)
         print('input size:', x.size())
-        print('rpn_conv layer num', self.num_convs)
+        print('rpn_conv layer num', self.num_convs, 'self.cls_out_channels', self.cls_out_channels)
         x = self.rpn_conv(x)
         print('after conv layer', x.size())
         x = F.relu(x, inplace=True)
         rpn_cls_score = self.rpn_cls(x)
-        print('cls score size:', rpn_cls_score.size())
+        print('rpn cls score size:', rpn_cls_score.size())
         rpn_bbox_pred = self.rpn_reg(x)
-        print('bbox_pred size:', rpn_bbox_pred.size())
+        print('rpn bbox_pred size:', rpn_bbox_pred.size())
         return rpn_cls_score, rpn_bbox_pred
 
     def loss(self,
