@@ -491,8 +491,8 @@ class AnchorHead(BaseDenseHead, BBoxTestMixin):
 
         anchor_list, valid_flag_list = self.get_anchors(
             featmap_sizes, img_metas, device=device)
-        print('anchor_list', anchor_list)
-        print('valid_flag_list', valid_flag_list)
+        print('anchor_list', len(anchor_list), len(anchor_list[0]), anchor_list[0][0].size())
+        print('valid_flag_list', len(valid_flag_list), len(valid_flag_list), valid_flag_list[0][0].size())
         label_channels = self.cls_out_channels if self.use_sigmoid_cls else 1
         print("label channels:", label_channels, "self.cls_out_channels", self.cls_out_channels, "self.use_sigmoid_cls", self.use_sigmoid_cls)
         cls_reg_targets = self.get_targets(
