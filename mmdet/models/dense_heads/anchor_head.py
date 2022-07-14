@@ -435,6 +435,7 @@ class AnchorHead(BaseDenseHead, BBoxTestMixin):
         label_weights = label_weights.reshape(-1)
         cls_score = cls_score.permute(0, 2, 3,
                                       1).reshape(-1, self.cls_out_channels)
+        print("cls score in single loss function", cls_score.size(), 'label length', labels.size())
         loss_cls = self.loss_cls(
             cls_score, labels, label_weights, avg_factor=num_total_samples)
         # regression loss
@@ -490,7 +491,10 @@ class AnchorHead(BaseDenseHead, BBoxTestMixin):
 
         anchor_list, valid_flag_list = self.get_anchors(
             featmap_sizes, img_metas, device=device)
+        print('anchor_list', anchor_list)
+        print('valid_flag_list', valid_flag_list)
         label_channels = self.cls_out_channels if self.use_sigmoid_cls else 1
+        print("label channels:", label_channels, "self.cls_out_channels", self.cls_out_channels, "self.use_sigmoid_cls", self.use_sigmoid_cls)
         cls_reg_targets = self.get_targets(
             anchor_list,
             valid_flag_list,
