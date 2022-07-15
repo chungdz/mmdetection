@@ -106,7 +106,7 @@ class SingleRoIExtractor(BaseRoIExtractor):
             if inds.numel() > 0:
                 rois_ = rois[inds]
                 roi_feats_t = self.roi_layers[i](feats[i], rois_)
-                print('roi_feats_t size', roi_feats_t.size(), 'feat i size', feats[i])
+                print('roi_feats_t size', roi_feats_t.size(), 'feat i size', feats[i].size())
                 roi_feats[inds] = roi_feats_t
             else:
                 # Sometimes some pyramid levels will not be used for RoI
