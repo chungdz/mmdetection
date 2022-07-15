@@ -91,6 +91,9 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
                 assign_result = self.bbox_assigner.assign(
                     proposal_list[i], gt_bboxes[i], gt_bboxes_ignore[i],
                     gt_labels[i])
+                print("assign result assign predicted boxes a ground truth box. \
+                0 unsigned, -1 ignored, others mean index of ground truth box\
+                ", assign_result)
                 sampling_result = self.bbox_sampler.sample(
                     assign_result,
                     proposal_list[i],
@@ -98,6 +101,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
                     gt_labels[i],
                     feats=[lvl_feat[i][None] for lvl_feat in x])
                 sampling_results.append(sampling_result)
+                print("sample result from random_sampler and base_sampler to generate trainset", sampling_result)
 
         losses = dict()
         # bbox head forward and loss
@@ -119,8 +123,10 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
     def _bbox_forward(self, x, rois):
         """Box head forward function used in both training and testing."""
         # TODO: a more flexible way to decide which feature maps to use
+        print("_bbox_forward", "extractor num inputs", self.bbox_roi_extractor.num_inputs)
         bbox_feats = self.bbox_roi_extractor(
             x[:self.bbox_roi_extractor.num_inputs], rois)
+        print("bbox_features size", bbox_feats.size())
         if self.with_shared_head:
             bbox_feats = self.shared_head(bbox_feats)
         cls_score, bbox_pred = self.bbox_head(bbox_feats)
@@ -132,7 +138,9 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
     def _bbox_forward_train(self, x, sampling_results, gt_bboxes, gt_labels,
                             img_metas):
         """Run forward function and calculate loss for box head in training."""
+        print('calculate ROI')
         rois = bbox2roi([res.bboxes for res in sampling_results])
+        print("ROI format of 4 index for each image", rois.size())
         bbox_results = self._bbox_forward(x, rois)
 
         bbox_targets = self.bbox_head.get_targets(sampling_results, gt_bboxes,
