@@ -69,8 +69,10 @@ class SingleRoIExtractor(BaseRoIExtractor):
             roi_feats = roi_feats.reshape(-1, self.out_channels, *out_size)
             roi_feats = roi_feats * 0
         else:
+            print('feats 0 size', feats.size())
             roi_feats = feats[0].new_zeros(
                 rois.size(0), self.out_channels, *out_size)
+            print("zeros size", roi_feats.size())
         # TODO: remove this when parrots supports
         if torch.__version__ == 'parrots':
             roi_feats.requires_grad = True
@@ -100,9 +102,11 @@ class SingleRoIExtractor(BaseRoIExtractor):
                 roi_feats += roi_feats_t
                 continue
             inds = mask.nonzero(as_tuple=False).squeeze(1)
+            print('inds.numel', inds.numel(), inds)
             if inds.numel() > 0:
                 rois_ = rois[inds]
                 roi_feats_t = self.roi_layers[i](feats[i], rois_)
+                print('roi_feats_t size', roi_feats_t.size())
                 roi_feats[inds] = roi_feats_t
             else:
                 # Sometimes some pyramid levels will not be used for RoI
