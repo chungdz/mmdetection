@@ -86,9 +86,10 @@ class SingleRoIExtractor(BaseRoIExtractor):
 
         if roi_scale_factor is not None:
             rois = self.roi_rescale(rois, roi_scale_factor)
-
+        print('num levels', num_levels)
         for i in range(num_levels):
             mask = target_lvls == i
+            print("mask", mask.size(), "target lvls", target_lvls.size(), "i ", i)
             if torch.onnx.is_in_onnx_export():
                 # To keep all roi_align nodes exported to onnx
                 # and skip nonzero op
@@ -107,6 +108,7 @@ class SingleRoIExtractor(BaseRoIExtractor):
                 rois_ = rois[inds]
                 roi_feats_t = self.roi_layers[i](feats[i], rois_)
                 print('roi_feats_t size', roi_feats_t.size(), 'feat i size', feats[i].size())
+                print(rois_)
                 roi_feats[inds] = roi_feats_t
             else:
                 # Sometimes some pyramid levels will not be used for RoI
