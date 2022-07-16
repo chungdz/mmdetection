@@ -83,7 +83,7 @@ class SingleRoIExtractor(BaseRoIExtractor):
             return self.roi_layers[0](feats[0], rois)
 
         target_lvls = self.map_roi_levels(rois, num_levels)
-
+        print("finest scale", self.finest_scale)
         if roi_scale_factor is not None:
             rois = self.roi_rescale(rois, roi_scale_factor)
         print('num levels', num_levels)
