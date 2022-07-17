@@ -74,6 +74,7 @@ class SingleRoIExtractor(BaseRoIExtractor):
                 rois.size(0), self.out_channels, *out_size)
             print("zeros size", roi_feats.size())
         # TODO: remove this when parrots supports
+        print("torch.__version__ == 'parrots'?", torch.__version__ == 'parrots')
         if torch.__version__ == 'parrots':
             roi_feats.requires_grad = True
 
