@@ -58,15 +58,6 @@ class SingleRoIExtractor(BaseRoIExtractor):
     def forward(self, feats, rois, roi_scale_factor=None):
         """Forward function."""
         num_levels = len(feats)
-        
-        # TODO: remove this when parrots supports
-        if torch.__version__ == 'parrots':
-            roi_feats.requires_grad = True
-
-        if num_levels == 1:
-            if len(rois) == 0:
-                return roi_feats
-            return self.roi_layers[0](feats[0], rois)
 
         target_lvls = self.map_roi_levels(rois, num_levels)
 
