@@ -76,8 +76,6 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
         rlen = len(rois)
         for level in range(num_levels):
             curf = feats[level]
-            print("curf", curf.size(), curf.isnan().sum())
-            print("curf < 0", (curf < 0).sum())
             batch_size, channels, ch, cw = curf.size()
             scale_factor = self.featmap_strides[level]
             rois_rescale = torch.round(rois[:, 1:] / scale_factor).long()
