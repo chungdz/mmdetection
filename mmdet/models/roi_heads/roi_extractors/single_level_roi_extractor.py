@@ -60,6 +60,8 @@ class SingleRoIExtractor(BaseRoIExtractor):
         """Forward function."""
         out_size = self.roi_layers[0].output_size
         num_levels = len(feats)
+        for f in feats:
+            print("feature == 0", (f == 0).sum(), "feature < 0", (f < 0).sum())
         expand_dims = (-1, self.out_channels * out_size[0] * out_size[1])
         print("expand dims of ROI features", expand_dims, "onnx export?", torch.onnx.is_in_onnx_export())
         if torch.onnx.is_in_onnx_export():
