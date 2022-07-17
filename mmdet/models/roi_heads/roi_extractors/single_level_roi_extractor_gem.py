@@ -7,7 +7,7 @@ from .base_roi_extractor import BaseRoIExtractor
 
 
 @ROI_EXTRACTORS.register_module()
-class SingleRoIExtractorGeM(BaseRoIExtractor):
+class SingleRoIExtractor(BaseRoIExtractor):
     """Extract RoI features from a single level feature map.
 
     If there are multiple input feature levels, each RoI is mapped to a level
@@ -29,7 +29,7 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
                  featmap_strides,
                  finest_scale=56,
                  init_cfg=None):
-        super(SingleRoIExtractorGeM, self).__init__(roi_layer, out_channels,
+        super(SingleRoIExtractor, self).__init__(roi_layer, out_channels,
                                                  featmap_strides, init_cfg)
         self.finest_scale = finest_scale
 
@@ -56,23 +56,9 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
 
     @force_fp32(apply_to=('feats', ), out_fp16=True)
     def forward(self, feats, rois, roi_scale_factor=None):
-        print("single level roi extractor")
         """Forward function."""
-        out_size = self.roi_layers[0].output_size
         num_levels = len(feats)
-        expand_dims = (-1, self.out_channels * out_size[0] * out_size[1])
-        print("expand dims of ROI features", expand_dims, "onnx export?", torch.onnx.is_in_onnx_export())
-        if torch.onnx.is_in_onnx_export():
-            # Work around to export mask-rcnn to onnx
-            roi_feats = rois[:, :1].clone().detach()
-            roi_feats = roi_feats.expand(*expand_dims)
-            roi_feats = roi_feats.reshape(-1, self.out_channels, *out_size)
-            roi_feats = roi_feats * 0
-        else:
-            print('feats 0 size', feats[0].size())
-            roi_feats = feats[0].new_zeros(
-                rois.size(0), self.out_channels, *out_size)
-            print("zeros size", roi_feats.size())
+        
         # TODO: remove this when parrots supports
         if torch.__version__ == 'parrots':
             roi_feats.requires_grad = True
@@ -83,13 +69,12 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
             return self.roi_layers[0](feats[0], rois)
 
         target_lvls = self.map_roi_levels(rois, num_levels)
-        print("finest scale", self.finest_scale)
+
         if roi_scale_factor is not None:
             rois = self.roi_rescale(rois, roi_scale_factor)
-        print('num levels', num_levels)
+
         for i in range(num_levels):
             mask = target_lvls == i
-            print("mask", mask.size(), "target lvls", target_lvls.size(), "i ", i)
             if torch.onnx.is_in_onnx_export():
                 # To keep all roi_align nodes exported to onnx
                 # and skip nonzero op
@@ -103,12 +88,9 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
                 roi_feats += roi_feats_t
                 continue
             inds = mask.nonzero(as_tuple=False).squeeze(1)
-            print('inds.numel', inds.numel(), inds)
             if inds.numel() > 0:
                 rois_ = rois[inds]
                 roi_feats_t = self.roi_layers[i](feats[i], rois_)
-                print('roi_feats_t size', roi_feats_t.size(), 'feat i size', feats[i].size())
-                print(rois_)
                 roi_feats[inds] = roi_feats_t
             else:
                 # Sometimes some pyramid levels will not be used for RoI
