@@ -8,7 +8,7 @@ from .base_roi_extractor import BaseRoIExtractor
 
 
 @ROI_EXTRACTORS.register_module()
-class SingleRoIExtractor(BaseRoIExtractor):
+class SingleRoIExtractorGeM(BaseRoIExtractor):
     """Extract RoI features from a single level feature map.
 
     If there are multiple input feature levels, each RoI is mapped to a level
@@ -30,7 +30,7 @@ class SingleRoIExtractor(BaseRoIExtractor):
                  featmap_strides,
                  finest_scale=56,
                  init_cfg=None):
-        super(SingleRoIExtractor, self).__init__(roi_layer, out_channels,
+        super(SingleRoIExtractorGeM, self).__init__(roi_layer, out_channels,
                                                  featmap_strides, init_cfg)
         self.finest_scale = finest_scale
         self.p = nn.Parameter(torch.Tensor([3, 3, 3, 3]))
