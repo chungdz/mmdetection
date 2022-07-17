@@ -40,6 +40,7 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
                                                         [0.2, 0.8, 0.4, 0.1],
                                                         [0.1, 0.2, 0.8, 0.4],
                                                         [0.1, 0.2, 0.4, 0.8]]), requires_grad=False)
+        self.output_size = roi_layer.output_size
 
     def map_roi_levels(self, rois, num_levels):
         """Map rois to corresponding feature levels by scales.
@@ -67,7 +68,7 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
         """Forward function."""
         num_levels = len(feats)
         target_lvls = self.map_roi_levels(rois, num_levels)
-        output_dim = self.roi_layer.output_size
+        output_dim = self.output_size
 
         roi_feats_list = []
         rois_index = rois[:, 0].long()
