@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
+import torch.nn as nn
 from mmcv.runner import force_fp32
 
 from mmdet.models.builder import ROI_EXTRACTORS
@@ -32,6 +33,13 @@ class SingleRoIExtractor(BaseRoIExtractor):
         super(SingleRoIExtractor, self).__init__(roi_layer, out_channels,
                                                  featmap_strides, init_cfg)
         self.finest_scale = finest_scale
+        self.p = nn.Parameter(torch.Tensor([3, 3, 3, 3]))
+        self.proj = nn.ModuleList([nn.Conv2d(256, 256, 1, 1, 0) for _ in range(4)])
+        self.minimumx = nn.Parameter(torch.Tensor([1e-6]), requires_grad=False)
+        self.weights = nn.Parameter(torch.Tensor([[0.8, 0.4, 0.2, 0.1],
+                                                        [0.2, 0.8, 0.4, 0.1],
+                                                        [0.1, 0.2, 0.8, 0.4],
+                                                        [0.1, 0.2, 0.4, 0.8]]), requires_grad=False)
 
     def map_roi_levels(self, rois, num_levels):
         """Map rois to corresponding feature levels by scales.
@@ -58,39 +66,79 @@ class SingleRoIExtractor(BaseRoIExtractor):
     def forward(self, feats, rois, roi_scale_factor=None):
         """Forward function."""
         num_levels = len(feats)
-
         target_lvls = self.map_roi_levels(rois, num_levels)
 
-        if roi_scale_factor is not None:
-            rois = self.roi_rescale(rois, roi_scale_factor)
+        roi_feats_list = []
+        rois_index = rois[:, 0].long()
+        rois_index_sub = rois_index.reshape(-1, 1, 1).repeat(1, 7, 7)
+        rlen = len(rois)
+        for level in range(num_levels):
+            curf = feats[level]
+            batch_size, channels, ch, cw = curf.size()
+            scale_factor = self.featmap_strides[level]
+            rois_rescale = torch.round(rois[:, 1:] / scale_factor).long()
+            # gem power
+            xpower = torch.pow(torch.maximum(curf, self.minimumx), self.p[level])
+            # gem sum, but store as cumsum
+            xpower_cumsum = xpower.cumsum(2).cumsum(3)
+            # rescaled coordinates
+            x1 = torch.clamp(rois_rescale[:, 0], min=0, max=cw - 1)
+            y1 = torch.clamp(rois_rescale[:, 1], min=0, max=ch - 1)
+            x2 = torch.clamp(rois_rescale[:, 2], min=0, max=cw - 1)
+            y2 = torch.clamp(rois_rescale[:, 3], min=0, max=ch - 1)
+            # subregion intervals generate 7 * 7
+            w = x2 - x1 + 1
+            h = y2 - y1 + 1
+            winc = torch.floor(w / 7).long()
+            hinc = torch.floor(h / 7).long()
+            # find all subregion coordinates and area
+            subrois_x1 = []
+            subrois_x2 = []
+            subrois_y1 = []
+            subrois_y2 = []
+            subrois_area = []
+            for i in range(7):
+                cur_y1 = y1 + hinc * i
+                if i < 6:
+                    cur_y2 = cur_y1 + hinc
+                else:
+                    cur_y2 = y2
+                for j in range(7):
+                    cur_x1 = x1 + winc * j
+                    if j < 6:
+                        cur_x2 = cur_x1 + winc
+                    else:
+                        cur_x2 = x2
 
-        for i in range(num_levels):
-            mask = target_lvls == i
-            if torch.onnx.is_in_onnx_export():
-                # To keep all roi_align nodes exported to onnx
-                # and skip nonzero op
-                mask = mask.float().unsqueeze(-1)
-                # select target level rois and reset the rest rois to zero.
-                rois_i = rois.clone().detach()
-                rois_i *= mask
-                mask_exp = mask.expand(*expand_dims).reshape(roi_feats.shape)
-                roi_feats_t = self.roi_layers[i](feats[i], rois_i)
-                roi_feats_t *= mask_exp
-                roi_feats += roi_feats_t
-                continue
-            inds = mask.nonzero(as_tuple=False).squeeze(1)
-            if inds.numel() > 0:
-                rois_ = rois[inds]
-                roi_feats_t = self.roi_layers[i](feats[i], rois_)
-                roi_feats[inds] = roi_feats_t
-            else:
-                # Sometimes some pyramid levels will not be used for RoI
-                # feature extraction and this will cause an incomplete
-                # computation graph in one GPU, which is different from those
-                # in other GPUs and will cause a hanging error.
-                # Therefore, we add it to ensure each feature pyramid is
-                # included in the computation graph to avoid runtime bugs.
-                roi_feats += sum(
-                    x.view(-1)[0]
-                    for x in self.parameters()) * 0. + feats[i].sum() * 0.
-        return roi_feats
+                    subrois_x1.append(cur_x1)
+                    subrois_y1.append(cur_y1)
+                    subrois_x2.append(cur_x2)
+                    subrois_y2.append(cur_y2)
+
+                    subarea = (cur_x2 - cur_x1 + 1) * (cur_y2 - cur_y1 + 1)
+                    subrois_area.append(subarea)
+            # concat them all together
+            # size(N, 7, 7)
+            sx1 = torch.cat(subrois_x1, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
+            sy1 = torch.cat(subrois_y1, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
+            sx2 = torch.cat(subrois_x2, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
+            sy2 = torch.cat(subrois_y2, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
+            ss = torch.cat(subrois_area, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
+            # get ROI subregion gem sum
+            v1 = xpower_cumsum[rois_index_sub, :, sy1, sx1]
+            v2 = xpower_cumsum[rois_index_sub, :, sy1, sx2]
+            v3 = xpower_cumsum[rois_index_sub, :, sy2, sx1]
+            v4 = xpower_cumsum[rois_index_sub, :, sy2, sx2]
+            # get real sum by inclusive-exclusive algo
+            subroi_power_sum = v4 - v3 - v2 + v1
+            # calculate mean by divide area
+            subroi_mean = subroi_power_sum / ss.unsqueeze(-1)
+            gem = torch.pow(subroi_mean, 1.0 / self.p[level])
+            feat_level = self.proj[level](gem.permute(0, 3, 1, 2))
+            roi_feats_list.append(feat_level)
+
+        add_weights = self.weights[target_lvls]
+        roi_feats = torch.cat(roi_feats_list, dim=1).reshape(-1, num_levels, 256, 7, 7)
+        roi_feats_weighted = torch.sum(roi_feats * add_weights.reshape(-1, num_levels, 1, 1, 1),dim=1)
+
+        return roi_feats_weighted
