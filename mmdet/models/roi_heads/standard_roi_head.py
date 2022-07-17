@@ -157,6 +157,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
                             img_metas):
         """Run forward function and calculate loss for mask head in
         training."""
+        print("_mask_forwad_train", "share roi extractor or not", self.share_roi_extractor)
         if not self.share_roi_extractor:
             pos_rois = bbox2roi([res.pos_bboxes for res in sampling_results])
             mask_results = self._mask_forward(x, pos_rois)
@@ -192,6 +193,8 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         """Mask head forward function used in both training and testing."""
         assert ((rois is not None) ^
                 (pos_inds is not None and bbox_feats is not None))
+        print("mask forward", "self.mask_roi_extractor.num_inputs", self.mask_roi_extractor.num_inputs)
+        print("self.with_shared_head", self.with_shared_head)
         if rois is not None:
             mask_feats = self.mask_roi_extractor(
                 x[:self.mask_roi_extractor.num_inputs], rois)
