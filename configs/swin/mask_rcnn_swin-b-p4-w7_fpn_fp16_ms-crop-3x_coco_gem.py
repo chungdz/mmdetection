@@ -13,9 +13,9 @@ model = dict(
         init_cfg=dict(type='Pretrained', checkpoint=pretrained)),
     neck=dict(in_channels=[128, 256, 512, 1024]),
     roi_head=dict(
-        type='StandardRoIHeadGeM',
+        type='StandardRoIHead',
         bbox_roi_extractor=dict(
-            type='SingleRoIExtractor',
+            type='SingleRoIExtractorGeM',
             roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
             out_channels=256,
             featmap_strides=[4, 8, 16, 32]),

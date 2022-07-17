@@ -74,6 +74,8 @@ class SingleRoIExtractor(BaseRoIExtractor):
         rlen = len(rois)
         for level in range(num_levels):
             curf = feats[level]
+            print("curf", curf.size(), curf.isnan().sum())
+            print("curf < 0", (curf < 0).sum())
             batch_size, channels, ch, cw = curf.size()
             scale_factor = self.featmap_strides[level]
             rois_rescale = torch.round(rois[:, 1:] / scale_factor).long()
@@ -82,10 +84,10 @@ class SingleRoIExtractor(BaseRoIExtractor):
             # gem sum, but store as cumsum
             xpower_cumsum = xpower.cumsum(2).cumsum(3)
             # rescaled coordinates
-            x1 = torch.clamp(rois_rescale[:, 0], min=0, max=cw - 1)
-            y1 = torch.clamp(rois_rescale[:, 1], min=0, max=ch - 1)
-            x2 = torch.clamp(rois_rescale[:, 2], min=0, max=cw - 1)
-            y2 = torch.clamp(rois_rescale[:, 3], min=0, max=ch - 1)
+            x1 = torch.clamp(rois_rescale[:, 0], min=1, max=cw - 1)
+            y1 = torch.clamp(rois_rescale[:, 1], min=1, max=ch - 1)
+            x2 = torch.clamp(rois_rescale[:, 2], min=1, max=cw - 1)
+            y2 = torch.clamp(rois_rescale[:, 3], min=1, max=ch - 1)
             # subregion intervals generate 7 * 7
             w = x2 - x1 + 1
             h = y2 - y1 + 1
@@ -114,7 +116,7 @@ class SingleRoIExtractor(BaseRoIExtractor):
                     subrois_y1.append(cur_y1)
                     subrois_x2.append(cur_x2)
                     subrois_y2.append(cur_y2)
-
+                    
                     subarea = (cur_x2 - cur_x1 + 1) * (cur_y2 - cur_y1 + 1)
                     subrois_area.append(subarea)
             # concat them all together
@@ -125,15 +127,15 @@ class SingleRoIExtractor(BaseRoIExtractor):
             sy2 = torch.cat(subrois_y2, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
             ss = torch.cat(subrois_area, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
             # get ROI subregion gem sum
-            v1 = xpower_cumsum[rois_index_sub, :, sy1, sx1]
-            v2 = xpower_cumsum[rois_index_sub, :, sy1, sx2]
-            v3 = xpower_cumsum[rois_index_sub, :, sy2, sx1]
+            v1 = xpower_cumsum[rois_index_sub, :, sy1 - 1, sx1 - 1]
+            v2 = xpower_cumsum[rois_index_sub, :, sy1 - 1, sx2]
+            v3 = xpower_cumsum[rois_index_sub, :, sy2, sx1 - 1]
             v4 = xpower_cumsum[rois_index_sub, :, sy2, sx2]
             # get real sum by inclusive-exclusive algo
-            subroi_power_sum = v4 - v3 - v2 + v1
+            subroi_power_sum = v4 - v3 - v2 + v1 + 1
             # calculate mean by divide area
-            subroi_mean = subroi_power_sum / ss.unsqueeze(-1)
-            gem = torch.pow(subroi_mean, 1.0 / self.p[level])
+            subroi_mean = subroi_power_sum / (ss.unsqueeze(-1))
+            gem = torch.sign(subroi_mean) * torch.pow(torch.abs(subroi_mean), 1.0 / self.p[level])
             feat_level = self.proj[level](gem.permute(0, 3, 1, 2))
             roi_feats_list.append(feat_level)
 
