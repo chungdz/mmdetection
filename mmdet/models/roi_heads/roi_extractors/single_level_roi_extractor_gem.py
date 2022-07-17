@@ -135,7 +135,8 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
             subroi_power_sum = v4 - v3 - v2 + v1 + 1
             # calculate mean by divide area
             subroi_mean = subroi_power_sum / (ss.unsqueeze(-1))
-            gem = torch.sign(subroi_mean) * torch.pow(torch.abs(subroi_mean), 1.0 / self.p[level])
+            # gem = torch.sign(subroi_mean) * torch.pow(torch.abs(subroi_mean), 1.0 / self.p[level])
+            gem = torch.pow(torch.maximum(subroi_mean, self.minimumx), 1.0 / self.p[level])
             feat_level = self.proj[level](gem.permute(0, 3, 1, 2))
             roi_feats_list.append(feat_level)
 
@@ -144,3 +145,4 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
         roi_feats_weighted = torch.sum(roi_feats * add_weights.reshape(-1, num_levels, 1, 1, 1),dim=1)
 
         return roi_feats_weighted
+

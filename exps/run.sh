@@ -115,9 +115,9 @@ python tools/train.py \
 python tools/train.py \
     configs/swin/mask_rcnn_swin-b-p4-w7_fpn_fp16_ms-crop-3x_coco_gem.py \
     --auto-scale-lr \
-    --cfg-options auto_scale_lr.base_batch_size=3 \
+    --cfg-options auto_scale_lr.base_batch_size=2 \
                     data.workers_per_gpu=8 \
-                    data.samples_per_gpu=3 \
+                    data.samples_per_gpu=2 \
                     log_config.interval=5 \
                     runner.max_epochs=2 \
                     data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
@@ -125,5 +125,6 @@ python tools/train.py \
                     evaluation.interval=1 \
                     lr_config.step="[2,2]" \
                     lr_config.warmup_iters=10 \
-    --work-dir=/mnt/cps_detect
+    --work-dir=cps
+
 
