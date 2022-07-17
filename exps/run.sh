@@ -118,7 +118,7 @@ python tools/train.py \
     --cfg-options auto_scale_lr.base_batch_size=2 \
                     data.workers_per_gpu=8 \
                     data.samples_per_gpu=2 \
-                    log_config.interval=5 \
+                    log_config.interval=50 \
                     runner.max_epochs=2 \
                     data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
                     model.backbone.init_cfg.checkpoint='/mnt/checkpoints/swin_base_patch4_window7_224_22k.pth'\
