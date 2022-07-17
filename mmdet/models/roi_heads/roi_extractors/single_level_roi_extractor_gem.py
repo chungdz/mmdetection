@@ -67,10 +67,11 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
         """Forward function."""
         num_levels = len(feats)
         target_lvls = self.map_roi_levels(rois, num_levels)
+        output_dim = self.roi_layer.output_size
 
         roi_feats_list = []
         rois_index = rois[:, 0].long()
-        rois_index_sub = rois_index.reshape(-1, 1, 1).repeat(1, 7, 7)
+        rois_index_sub = rois_index.reshape(-1, 1, 1).repeat(1, output_dim, output_dim)
         rlen = len(rois)
         for level in range(num_levels):
             curf = feats[level]
@@ -88,24 +89,24 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
             y1 = torch.clamp(rois_rescale[:, 1], min=1, max=ch - 1)
             x2 = torch.clamp(rois_rescale[:, 2], min=1, max=cw - 1)
             y2 = torch.clamp(rois_rescale[:, 3], min=1, max=ch - 1)
-            # subregion intervals generate 7 * 7
+            # subregion intervals generate output_dim * output_dim
             w = x2 - x1 + 1
             h = y2 - y1 + 1
-            winc = torch.floor(w / 7).long()
-            hinc = torch.floor(h / 7).long()
+            winc = torch.floor(w / output_dim).long()
+            hinc = torch.floor(h / output_dim).long()
             # find all subregion coordinates and area
             subrois_x1 = []
             subrois_x2 = []
             subrois_y1 = []
             subrois_y2 = []
             subrois_area = []
-            for i in range(7):
+            for i in range(output_dim):
                 cur_y1 = y1 + hinc * i
                 if i < 6:
                     cur_y2 = cur_y1 + hinc
                 else:
                     cur_y2 = y2
-                for j in range(7):
+                for j in range(output_dim):
                     cur_x1 = x1 + winc * j
                     if j < 6:
                         cur_x2 = cur_x1 + winc
@@ -120,12 +121,12 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
                     subarea = (cur_x2 - cur_x1 + 1) * (cur_y2 - cur_y1 + 1)
                     subrois_area.append(subarea)
             # concat them all together
-            # size(N, 7, 7)
-            sx1 = torch.cat(subrois_x1, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
-            sy1 = torch.cat(subrois_y1, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
-            sx2 = torch.cat(subrois_x2, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
-            sy2 = torch.cat(subrois_y2, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
-            ss = torch.cat(subrois_area, dim=-1).reshape(7, 7, rlen).permute(2, 1, 0)
+            # size(N, output_dim, output_dim)
+            sx1 = torch.cat(subrois_x1, dim=-1).reshape(output_dim, output_dim, rlen).permute(2, 1, 0)
+            sy1 = torch.cat(subrois_y1, dim=-1).reshape(output_dim, output_dim, rlen).permute(2, 1, 0)
+            sx2 = torch.cat(subrois_x2, dim=-1).reshape(output_dim, output_dim, rlen).permute(2, 1, 0)
+            sy2 = torch.cat(subrois_y2, dim=-1).reshape(output_dim, output_dim, rlen).permute(2, 1, 0)
+            ss = torch.cat(subrois_area, dim=-1).reshape(output_dim, output_dim, rlen).permute(2, 1, 0)
             # get ROI subregion gem sum
             v1 = xpower_cumsum[rois_index_sub, :, sy1 - 1, sx1 - 1]
             v2 = xpower_cumsum[rois_index_sub, :, sy1 - 1, sx2]
@@ -140,7 +141,7 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
             roi_feats_list.append(feat_level)
 
         add_weights = self.weights[target_lvls]
-        roi_feats = torch.cat(roi_feats_list, dim=1).reshape(-1, num_levels, 256, 7, 7)
+        roi_feats = torch.cat(roi_feats_list, dim=1).reshape(-1, num_levels, 256, output_dim, output_dim)
         roi_feats_weighted = torch.sum(roi_feats * add_weights.reshape(-1, num_levels, 1, 1, 1),dim=1)
 
         return roi_feats_weighted

@@ -106,14 +106,14 @@ python tools/train.py \
                     log_config.interval=100 \
                     runner.max_epochs=2 \
                     data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
-                    model.backbone.init_cfg.checkpoint='checkpoints/swin_base_patch4_window7_224_22k.pth'\
+                    model.backbone.init_cfg.checkpoint='/mnt/checkpoints/swin_base_patch4_window7_224_22k.pth'\
                     evaluation.interval=1 \
                     lr_config.step="[2,2]" \
                     lr_config.warmup_iters=10 \
-    --work-dir=cps
+    --work-dir=/mnt/cps_detect
 
 python tools/train.py \
-    configs/swin/mask_rcnn_swin-b-p4-w7_fp16_ms-crop-3x_coco_gem.py \
+    configs/swin/mask_rcnn_swin-b-p4-w7_fpn_fp16_ms-crop-3x_coco_gem.py \
     --auto-scale-lr \
     --cfg-options auto_scale_lr.base_batch_size=3 \
                     data.workers_per_gpu=8 \
@@ -121,9 +121,9 @@ python tools/train.py \
                     log_config.interval=5 \
                     runner.max_epochs=2 \
                     data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
-                    model.backbone.init_cfg.checkpoint='checkpoints/swin_base_patch4_window7_224_22k.pth'\
+                    model.backbone.init_cfg.checkpoint='/mnt/checkpoints/swin_base_patch4_window7_224_22k.pth'\
                     evaluation.interval=1 \
                     lr_config.step="[2,2]" \
                     lr_config.warmup_iters=10 \
-    --work-dir=cps
+    --work-dir=/mnt/cps_detect
 
