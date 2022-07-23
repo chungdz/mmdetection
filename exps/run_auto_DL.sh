@@ -195,23 +195,23 @@ python tools/train.py \
 
 
     
-# no fpn
-
+# fpn small
 ./tools/dist_train.sh \
-    configs/swin/mask_rcnn_swin-b-p4-w7_fp16_ms-crop-3x_coco.py \
+    configs/swin/cascade_mask_rcnn_swin-b-p4-w7_fpn_fp16_ms-crop-3x_coco.py \
     6 \
     --auto-scale-lr \
     --cfg-options auto_scale_lr.base_batch_size=18 \
                     data.workers_per_gpu=8 \
                     data.samples_per_gpu=3 \
                     log_config.interval=1000 \
-                    runner.max_epochs=2 \
+                    runner.max_epochs=5 \
                     data.train.ann_file='/root/autodl-tmp/coco/annotations/instances_train2017.small.json' \
                     model.backbone.init_cfg.checkpoint='/root/autodl-tmp/checkpoints/swin_base_patch4_window7_224_22k.pth'\
                     evaluation.interval=1 \
-                    lr_config.step="[19,22]" \
+                    lr_config.step="[4,5]" \
                     lr_config.warmup_iters=1 \
-    --work-dir=/root/autodl-tmp/cps
+    --work-dir=/root/autodl-tmp/cps \
+    --auto-resume
 
 
 ./tools/dist_train.sh \
@@ -234,9 +234,9 @@ python tools/train.py \
     configs/swin/mask_rcnn_swin-b-p4-w7_fpn_fp16_ms-crop-3x_coco_gem.py \
     6 \
     --auto-scale-lr \
-    --cfg-options auto_scale_lr.base_batch_size=18 \
+    --cfg-options auto_scale_lr.base_batch_size=12 \
                     data.workers_per_gpu=8 \
-                    data.samples_per_gpu=3 \
+                    data.samples_per_gpu=2 \
                     log_config.interval=1000 \
                     runner.max_epochs=22 \
                     model.backbone.init_cfg.checkpoint='/root/autodl-tmp/checkpoints/swin_base_patch4_window7_224_22k.pth'\

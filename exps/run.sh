@@ -91,11 +91,12 @@ python tools/train.py \
                     data.workers_per_gpu=8 \
                     data.samples_per_gpu=3 \
                     log_config.interval=100 \
-                    runner.max_epochs=2 \
+                    runner.max_epochs=5 \
                     data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
-                    model.backbone.init_cfg.checkpoint='checkpoints/swin_base_patch4_window7_224_22k.pth'\
+                    model.backbone.init_cfg.checkpoint='/mnt/checkpoints/swin_base_patch4_window7_224_22k.pth'\
                     evaluation.interval=1 \
-    --work-dir=cps
+    --work-dir=cps \
+    --auto-resume
 
 python tools/train.py \
     configs/swin/mask_rcnn_swin-b-p4-w7_fp16_ms-crop-3x_coco.py \
@@ -119,12 +120,13 @@ python tools/train.py \
                     data.workers_per_gpu=8 \
                     data.samples_per_gpu=2 \
                     log_config.interval=50 \
-                    runner.max_epochs=2 \
+                    runner.max_epochs=5 \
                     data.train.ann_file='/mnt/coco/annotations/instances_train2017.small.json' \
                     model.backbone.init_cfg.checkpoint='/mnt/checkpoints/swin_base_patch4_window7_224_22k.pth'\
                     evaluation.interval=1 \
                     lr_config.step="[2,2]" \
                     lr_config.warmup_iters=10 \
     --work-dir=cps
+    --resume_from=cps/latest.pth
 
 
