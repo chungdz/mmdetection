@@ -30,7 +30,7 @@ model = dict(
         init_cfg=dict(type='Pretrained', checkpoint=pretrained)),
     neck=dict(in_channels=[128, 256, 512, 1024]),
     roi_head=dict(
-        type='StandardRoIHead',
+        type='CascadeRoIHead',
         bbox_roi_extractor=dict(
             type='SingleRoIExtractorGeM',
             roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
