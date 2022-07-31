@@ -36,9 +36,13 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
         self.p = nn.Parameter(torch.Tensor([3, 3, 3, 3]))
         self.proj = nn.ModuleList([nn.Conv2d(256, 256, 1, 1, 0) for _ in range(4)])
         self.minimumx = nn.Parameter(torch.Tensor([1e-6]), requires_grad=False)
-        self.weights = nn.Parameter(torch.Tensor([[0.8, 0.4, 0.2, 0.1],
-                                                        [0.2, 0.8, 0.4, 0.1],
-                                                        [0.1, 0.2, 0.8, 0.4],
+        # self.weights = nn.Parameter(torch.Tensor([[0.8, 0.4, 0.2, 0.1],
+        #                                                 [0.2, 0.8, 0.4, 0.1],
+        #                                                 [0.1, 0.2, 0.8, 0.4],
+        #                                                 [0.1, 0.2, 0.4, 0.8]]), requires_grad=False)
+        self.weights = nn.Parameter(torch.Tensor([[0.8, 0, 0, 0],
+                                                        [0.4, 0.8, 0, 0],
+                                                        [0.2, 0.4, 0.8, 0],
                                                         [0.1, 0.2, 0.4, 0.8]]), requires_grad=False)
         self.output_size = roi_layer.output_size
 
