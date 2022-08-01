@@ -40,10 +40,10 @@ class SingleRoIExtractorGeM(BaseRoIExtractor):
         #                                                 [0.2, 0.8, 0.4, 0.1],
         #                                                 [0.1, 0.2, 0.8, 0.4],
         #                                                 [0.1, 0.2, 0.4, 0.8]]), requires_grad=False)
-        self.weights = nn.Parameter(torch.Tensor([[0.8, 0, 0, 0],
-                                                        [0.4, 0.8, 0, 0],
-                                                        [0.2, 0.4, 0.8, 0],
-                                                        [0.1, 0.2, 0.4, 0.8]]), requires_grad=False)
+        self.weights = nn.Parameter(torch.Tensor([[1, 0, 0, 0],
+                                                        [0.33, 0.67, 0, 0],
+                                                        [0.14, 0.28, 0.58, 0],
+                                                        [0.06, 0.13, 0.26, 0.55]]), requires_grad=False)
         self.output_size = roi_layer.output_size
 
     def map_roi_levels(self, rois, num_levels):
