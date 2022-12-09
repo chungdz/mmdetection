@@ -34,6 +34,10 @@ HF_ENV_NAME=py38-202111 hfai bash tools/dist_train_hfai.sh \
     --auto-resume \
     -- --nodes 1 --environments MMDET_DATASETS=/public_dataset/1/COCO/ --environments OMP_NUM_THREADS=8 
 
+#任务创建完成，请等待调度，可以使用以下接口查询
+hfai status tools/dist_train_hfai.sh  # 查看任务状态
+hfai logs -f tools/dist_train_hfai.sh # 查看任务日志
+hfai stop tools/dist_train_hfai.sh # 关闭任务
 
 
                     
