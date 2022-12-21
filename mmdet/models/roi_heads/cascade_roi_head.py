@@ -143,9 +143,10 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
                                         rois)
         # print('bbox feats', bbox_feats.size())
         # do not support caffe_c4 model anymore
-        to_add = self.gems[0](x[0].reshape(2, 256, -1))
+        batch_size = x[0].size(0)
+        to_add = self.gems[0](x[0].reshape(batch_size, 256, -1))
         for i in range(1, 4):
-            to_add = to_add * 0.5 + self.gems[i](x[i].reshape(2, 256, -1))
+            to_add = to_add * 0.5 + self.gems[i](x[i].reshape(batch_size, 256, -1))
         
         idx = rois[:, 0].long()
         final = to_add[idx]
