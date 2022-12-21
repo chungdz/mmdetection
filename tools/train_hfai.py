@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import hfai_env
-hfai_env.set_env('exazon')
+hfai_env.set_env('exazon2')
 
 import argparse
 import copy
