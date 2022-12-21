@@ -145,7 +145,8 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         to_add = self.gems[0](x[0].reshape(2, 256, -1))
         for i in range(1, 4):
             to_add = to_add * 0.5 + self.gems[i](x[i].reshape(2, 256, -1))
-
+        to_add = to_add.repeat(1, 512).view(-1, 256)
+        print('to add', to_add.size())
         cls_score, bbox_pred = bbox_head(bbox_feats, to_add)
 
         bbox_results = dict(
