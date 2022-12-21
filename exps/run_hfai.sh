@@ -1,5 +1,5 @@
 hfai workspace push --force
-source hfai_env exazon
+source haienv exazon2
 
 HF_ENV_NAME=py38-202111 hfai bash tools/dist_train_hfai.sh \
     /weka-jd/prod/public/permanent/group_huyunfan/huyunfan/workspaces/detect2/mmdetection/configs/swin/cascade_mask_rcnn_swin-b-p4-w7_fpn_fp16_ms-crop-3x_coco.py \
