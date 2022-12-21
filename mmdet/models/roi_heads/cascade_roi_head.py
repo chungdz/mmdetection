@@ -137,16 +137,16 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         """Box head forward function used in both training and testing."""
         bbox_roi_extractor = self.bbox_roi_extractor[stage]
         bbox_head = self.bbox_head[stage]
-        print('bbox forward x input', [t.size() for t in x], 'num inputs', bbox_roi_extractor.num_inputs)
+        # print('bbox forward x input', [t.size() for t in x], 'num inputs', bbox_roi_extractor.num_inputs)
         bbox_feats = bbox_roi_extractor(x[:bbox_roi_extractor.num_inputs],
                                         rois)
-        print('bbox feats', bbox_feats.size())
+        # print('bbox feats', bbox_feats.size())
         # do not support caffe_c4 model anymore
         to_add = self.gems[0](x[0].reshape(2, 256, -1))
         for i in range(1, 4):
             to_add = to_add * 0.5 + self.gems[i](x[i].reshape(2, 256, -1))
         to_add = to_add.repeat(1, 512).view(-1, 256)
-        print('to add', to_add.size())
+        # print('to add', to_add.size())
         cls_score, bbox_pred = bbox_head(bbox_feats, to_add)
 
         bbox_results = dict(
@@ -230,7 +230,7 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
             dict[str, Tensor]: a dictionary of loss components
         """
         losses = dict()
-        print('num_stages', self.num_stages)
+        # print('num_stages', self.num_stages)
         for i in range(self.num_stages):
             self.current_stage = i
             rcnn_train_cfg = self.train_cfg[i]
@@ -258,7 +258,7 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
                     sampling_results.append(sampling_result)
 
             # bbox head forward and loss
-            print('stage', i, len(sampling_results), 'cascade roi head input size', sampling_results)
+            # print('stage', i, len(sampling_results), 'cascade roi head input size', sampling_results)
             bbox_results = self._bbox_forward_train(i, x, sampling_results,
                                                     gt_bboxes, gt_labels,
                                                     rcnn_train_cfg)

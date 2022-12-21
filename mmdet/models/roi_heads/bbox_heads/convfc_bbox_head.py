@@ -160,55 +160,55 @@ class ConvFCBBoxHead(BBoxHead):
 
     def forward(self, x, to_add=None):
         # shared part
-        print('share fc bbox head input', x.size())
+        # print('share fc bbox head input', x.size())
         if self.num_shared_convs > 0:
             for conv in self.shared_convs:
                 x = conv(x)
-            print('shared conv res', x.size())
+            # print('shared conv res', x.size())
 
         if self.num_shared_fcs > 0:
             if self.with_avg_pool:
                 x = self.avg_pool(x)
-            print('shared fc avg res', x.size())
+            # print('shared fc avg res', x.size())
             x = x.flatten(1)
 
             for fc in self.shared_fcs:
                 x = self.relu(fc(x))
         # separate branches
-        print('shared fc', x.size())
+        # print('shared fc', x.size())
         if not to_add is None:
             x = self.relu(self.adj(torch.cat([x, to_add], dim=-1)))
-            print('after adjustment', x)
+            # print('after adjustment', x.size())
         x_cls = x
         x_reg = x
 
         for conv in self.cls_convs:
             x_cls = conv(x_cls)
-        print('x cls', x_cls.size())
+        # print('x cls', x_cls.size())
         if x_cls.dim() > 2:
             if self.with_avg_pool:
                 x_cls = self.avg_pool(x_cls)
             x_cls = x_cls.flatten(1)
-            print('2 dim x_cls', x_cls.size())
+            # print('2 dim x_cls', x_cls.size())
         for fc in self.cls_fcs:
             x_cls = self.relu(fc(x_cls))
-        print('x cls after fc', x_cls.size())
+        # print('x cls after fc', x_cls.size())
 
         for conv in self.reg_convs:
             x_reg = conv(x_reg)
-        print('x reg', x_reg.size())
+        # print('x reg', x_reg.size())
         if x_reg.dim() > 2:
             if self.with_avg_pool:
                 x_reg = self.avg_pool(x_reg)
             x_reg = x_reg.flatten(1)
-            print('2 dim x_reg', x_reg.size())
+            # print('2 dim x_reg', x_reg.size())
         for fc in self.reg_fcs:
             x_reg = self.relu(fc(x_reg))
-        print('x reg after fc', x_reg.size())
+        # print('x reg after fc', x_reg.size())
 
         cls_score = self.fc_cls(x_cls) if self.with_cls else None
         bbox_pred = self.fc_reg(x_reg) if self.with_reg else None
-        print('score and pred', cls_score.size(), bbox_pred.size())
+        # print('score and pred', cls_score.size(), bbox_pred.size())
         return cls_score, bbox_pred
 
 
