@@ -143,7 +143,7 @@ class TwoStageDetector(BaseDetector):
             losses.update(rpn_losses)
         else:
             proposal_list = proposals
-
+        print('roi head input', [t.size() for t in x], 'proposal list length', [t.size() for t in proposal_list])
         roi_losses = self.roi_head.forward_train(x, img_metas, proposal_list,
                                                  gt_bboxes, gt_labels,
                                                  gt_bboxes_ignore, gt_masks,

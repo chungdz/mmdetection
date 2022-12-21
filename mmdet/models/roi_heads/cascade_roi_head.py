@@ -10,7 +10,7 @@ from mmdet.core import (bbox2result, bbox2roi, bbox_mapping, build_assigner,
 from ..builder import HEADS, build_head, build_roi_extractor
 from .base_roi_head import BaseRoIHead
 from .test_mixins import BBoxTestMixin, MaskTestMixin
-
+from .pooling import MultiStageGeM
 
 @HEADS.register_module()
 class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
@@ -38,6 +38,11 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
 
         self.num_stages = num_stages
         self.stage_loss_weights = stage_loss_weights
+        gem_list = []
+        for i in range(4):
+            gem_list.append(MultiStageGeM(256, 256, 'adaptive'))
+        self.gems = nn.ModuleList(gem_list)
+        
         super(CascadeRoIHead, self).__init__(
             bbox_roi_extractor=bbox_roi_extractor,
             bbox_head=bbox_head,
@@ -131,10 +136,16 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         """Box head forward function used in both training and testing."""
         bbox_roi_extractor = self.bbox_roi_extractor[stage]
         bbox_head = self.bbox_head[stage]
+        print('bbox forward x input', [t.size() for t in x], 'num inputs', bbox_roi_extractor.num_inputs)
         bbox_feats = bbox_roi_extractor(x[:bbox_roi_extractor.num_inputs],
                                         rois)
+        print('bbox feats', bbox_feats.size())
         # do not support caffe_c4 model anymore
-        cls_score, bbox_pred = bbox_head(bbox_feats)
+        to_add = self.gems[0](x[0].reshape(2, 256, -1))
+        for i in range(1, 4):
+            to_add = to_add * 0.5 + self.gems[i](x[i].reshape(2, 256, -1))
+
+        cls_score, bbox_pred = bbox_head(bbox_feats, to_add)
 
         bbox_results = dict(
             cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
@@ -217,6 +228,7 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
             dict[str, Tensor]: a dictionary of loss components
         """
         losses = dict()
+        print('num_stages', self.num_stages)
         for i in range(self.num_stages):
             self.current_stage = i
             rcnn_train_cfg = self.train_cfg[i]
@@ -244,6 +256,7 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
                     sampling_results.append(sampling_result)
 
             # bbox head forward and loss
+            print('stage', i, len(sampling_results), 'cascade roi head input size', sampling_results)
             bbox_results = self._bbox_forward_train(i, x, sampling_results,
                                                     gt_bboxes, gt_labels,
                                                     rcnn_train_cfg)
