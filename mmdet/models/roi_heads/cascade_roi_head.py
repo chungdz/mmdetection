@@ -133,7 +133,7 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
                 outs = outs + (mask_results['mask_pred'], )
         return outs
 
-    def _bbox_forward(self, stage, x, rois):
+    def _bbox_forward(self, stage, x, rois, sampling_results):
         """Box head forward function used in both training and testing."""
         bbox_roi_extractor = self.bbox_roi_extractor[stage]
         bbox_head = self.bbox_head[stage]
@@ -145,8 +145,14 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         to_add = self.gems[0](x[0].reshape(2, 256, -1))
         for i in range(1, 4):
             to_add = to_add * 0.5 + self.gems[i](x[i].reshape(2, 256, -1))
-        to_add = to_add.repeat(1, 512).view(-1, 256)
-        # print('to add', to_add.size())
+        
+        curres = []
+        for j in range(len(sampling_results)):
+            curnum = sampling_results[j]['neg_inds'].size(0) + 1
+            tmp = to_add[j, :].repeat(curnum).view(-1, 256)
+            curres.append(tmp)
+        to_add = torch.cat(curres, dim=0)
+        print('to add', to_add.size())
         cls_score, bbox_pred = bbox_head(bbox_feats, to_add)
 
         bbox_results = dict(
@@ -157,7 +163,7 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
                             gt_labels, rcnn_train_cfg):
         """Run forward function and calculate loss for box head in training."""
         rois = bbox2roi([res.bboxes for res in sampling_results])
-        bbox_results = self._bbox_forward(stage, x, rois)
+        bbox_results = self._bbox_forward(stage, x, rois, sampling_results)
         bbox_targets = self.bbox_head[stage].get_targets(
             sampling_results, gt_bboxes, gt_labels, rcnn_train_cfg)
         loss_bbox = self.bbox_head[stage].loss(bbox_results['cls_score'],
