@@ -52,7 +52,7 @@ class CascadeRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
             init_cfg=init_cfg)
         
         for i in range(4):
-            gem_list.append(MultiStageGeM(256, 256, 'adaptive'))
+            gem_list.append(MultiStageGeM(256, 256, 'MEX'))
         self.gems = nn.ModuleList(gem_list)
 
     def init_bbox_head(self, bbox_roi_extractor, bbox_head):

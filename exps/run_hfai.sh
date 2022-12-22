@@ -18,6 +18,8 @@ HF_ENV_NAME=py38-202111 hfai bash tools/dist_train_hfai.sh \
     --auto-resume \
     -- --nodes 1 --environments MMDET_DATASETS=/public_dataset/1/COCO/ --environments OMP_NUM_THREADS=8 
 
+hfai logs -f mmdetection/tools/dist_train_hfai.sh
+
 HF_ENV_NAME=py38-202111 hfai bash tools/dist_train_hfai.sh \
     /weka-jd/prod/public/permanent/group_huyunfan/huyunfan/workspaces/detect2/mmdetection/configs/swin/cascade_mask_rcnn_swin-b-p4-w7_fpn_fp16_ms-crop-3x_coco_gem.py \
     8 \
