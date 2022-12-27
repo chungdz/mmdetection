@@ -1,10 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-
+import torch.nn as nn
 from mmdet.core import bbox2result, bbox2roi, build_assigner, build_sampler
 from ..builder import HEADS, build_head, build_roi_extractor
 from .base_roi_head import BaseRoIHead
 from .test_mixins import BBoxTestMixin, MaskTestMixin
+from .pooling import MultiStageGeM
 
 
 @HEADS.register_module()
@@ -24,6 +25,10 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         """Initialize ``bbox_head``"""
         self.bbox_roi_extractor = build_roi_extractor(bbox_roi_extractor)
         self.bbox_head = build_head(bbox_head)
+        gem_list = []
+        for i in range(4):
+            gem_list.append(MultiStageGeM(256, 256, 'MEX'))
+        self.gems = nn.ModuleList(gem_list)
 
     def init_mask_head(self, mask_roi_extractor, mask_head):
         """Initialize ``mask_head``"""
@@ -129,7 +134,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
             to_add = to_add * 0.5 + self.gems[i](x[i].reshape(batch_size, 256, -1))
         idx = rois[:, 0].long()
         final = to_add[idx]
-
+        print('final', final.size())
         cls_score, bbox_pred = self.bbox_head(bbox_feats, final)
 
         bbox_results = dict(
