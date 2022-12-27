@@ -134,7 +134,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
             to_add = to_add * 0.5 + self.gems[i](x[i].reshape(batch_size, 256, -1))
         idx = rois[:, 0].long()
         final = to_add[idx]
-        print('final', final.size())
+        # print('final', final.size())
         cls_score, bbox_pred = self.bbox_head(bbox_feats, final)
 
         bbox_results = dict(
