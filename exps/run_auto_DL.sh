@@ -41,6 +41,17 @@ python tools/train.py \
                     runner.max_epochs=3 \
                     data.train.ann_file='/root/autodl-tmp/coco/annotations/instances_train2017.small.json' \
     --work-dir=/root/autodl-tmp/cps
+
+python tools/train.py \
+    configs/swin/mask_rcnn_swin-b-p4-w7_fpn_fp16_ms-crop-3x_coco.py \
+    --auto-scale-lr \
+    --cfg-options auto_scale_lr.base_batch_size=12 \
+                    data.workers_per_gpu=8 \
+                    data.samples_per_gpu=2 \
+                    log_config.interval=100 \
+                    runner.max_epochs=3 \
+                    data.train.ann_file='/root/autodl-tmp/coco/annotations/instances_train2017.small.json' \
+    --work-dir=/root/autodl-tmp/cps
 # run all
 python tools/train.py \
     configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \

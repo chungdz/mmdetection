@@ -122,7 +122,15 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
             x[:self.bbox_roi_extractor.num_inputs], rois)
         if self.with_shared_head:
             bbox_feats = self.shared_head(bbox_feats)
-        cls_score, bbox_pred = self.bbox_head(bbox_feats)
+
+        batch_size = x[0].size(0)
+        to_add = self.gems[0](x[0].reshape(batch_size, 256, -1))
+        for i in range(1, 4):
+            to_add = to_add * 0.5 + self.gems[i](x[i].reshape(batch_size, 256, -1))
+        idx = rois[:, 0].long()
+        final = to_add[idx]
+
+        cls_score, bbox_pred = self.bbox_head(bbox_feats, final)
 
         bbox_results = dict(
             cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
