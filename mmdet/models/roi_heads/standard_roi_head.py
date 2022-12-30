@@ -26,7 +26,7 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
         self.bbox_roi_extractor = build_roi_extractor(bbox_roi_extractor)
         self.bbox_head = build_head(bbox_head)
         gem_list = []
-        for i in range(4):
+        for i in range(5):
             gem_list.append(MultiStageGeM(256, 256, 'MEX'))
         self.gems = nn.ModuleList(gem_list)
 
@@ -134,6 +134,9 @@ class StandardRoIHead(BaseRoIHead, BBoxTestMixin, MaskTestMixin):
             to_add = to_add * 0.5 + self.gems[i](x[i].reshape(batch_size, 256, -1))
         idx = rois[:, 0].long()
         final = to_add[idx]
+
+        pooled_bbox = self.gems[4](bbox_feats.reshape(bbox_feats.size(0), 256, -1))
+        final = torch.cat([final, pooled_bbox], dim=-1)
         # print('final', final.size())
         cls_score, bbox_pred = self.bbox_head(bbox_feats, final)
 
