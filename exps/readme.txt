@@ -1,0 +1,2 @@
+config里有swin的各种settings
+cascade分支修改了convfc_head cascade_roi_head standard_roi_head，主要是添加了自己的模块在bbox forward函数中
